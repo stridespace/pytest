@@ -5,6 +5,10 @@ python:
 # command to install dependencies
 install:
   - pip install --upgrade --pre tox
+  - mkdir -p $HOME/bin
+  - curl -fsSL https://testspace-client.s3.amazonaws.com/testspace-linux.tgz | tar -zxvf- -C $HOME/bin
+  - testspace config url open.testspace.com
+  
 # # command to run tests
 env:
   matrix:
@@ -47,12 +51,12 @@ matrix:
 
 script: tox --recreate
 
+after_script:
+  - |
+    if [[ $TOXENV == "py"* || $TOXENV = "coveralls" ]]; then
+      testspace [$TOXENV]testing/results.xml{testing}
+    fi
+    
 notifications:
-  irc:
-    channels:
-      - "chat.freenode.net#pytest"
-    on_success: change
-    on_failure: change
-    skip_join: true
-  email:
-    - pytest-commit@python.org
+  email: false
+  irc: false
